@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package notification;
+
+// The notification service definition.
+service NotificationService {
+  // Sends a notification to a user
+  rpc SendNotification(NotificationRequest) returns (NotificationResponse) {}
+}
+
+// The request message containing the user's ID and the message.
+message NotificationRequest {
+  string userId = 1;
+  string message = 2;
+}
+
+// The response message containing the response details.
+message NotificationResponse {
+  string result = 1;
+}
