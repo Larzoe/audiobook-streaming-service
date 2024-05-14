@@ -43,37 +43,9 @@ def get_audiobooks(db: Session = Depends(get_db)):
     audiobooks = db.query(Audiobook).all()
     return audiobooks
 
-@app.post("/audiobooks", response_model=AudiobookCreate)
-def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
-    db_audiobook = Audiobook(title=audiobook.title, author=audiobook.author, genre=audiobook.genre)
-    db.add(db_audiobook)
-    db.commit()
-    db.refresh(db_audiobook)
-    return db_audiobook
-
-@app.put("/audiobooks/{audiobook_id}", response_model=AudiobookCreate)
-def update_audiobook(audiobook_id: int, audiobook: AudiobookUpdate, db: Session = Depends(get_db)):
-    db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
-    if not db_audiobook:
+@app.get("/audiobooks/{audiobook_id}", response_model=AudiobookCreate)
+def get_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
+    audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
+    if not audiobook:
         raise HTTPException(status_code=404, detail="Audiobook not found")
-    
-    if audiobook.title:
-        db_audiobook.title = audiobook.title
-    if audiobook.author:
-        db_audiobook.author = audiobook.author
-    if audiobook.genre:
-        db_audiobook.genre = audiobook.genre
-    
-    db.commit()
-    db.refresh(db_audiobook)
-    return db_audiobook
-
-@app.delete("/audiobooks/{audiobook_id}", response_model=dict)
-def delete_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
-    db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
-    if not db_audiobook:
-        raise HTTPException(status_code=404, detail="Audiobook not found")
-    
-    db.delete(db_audiobook)
-    db.commit()
-    return {"message": "Audiobook deleted successfully"}
+    return audiobook
