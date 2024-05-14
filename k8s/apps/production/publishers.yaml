@@ -1,0 +1,61 @@
+# prod-publishers-manifest.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publishers-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: publishers
+  template:
+    metadata:
+      labels:
+        app: publishers
+    spec:
+      containers:
+      - name: publishers-container
+        image: gcr.io/nginxdemos/hello
+        ports:
+        - containerPort: 80
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        requests:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publishers-service
+spec:
+  selector:
+    app: publishers
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: publishers-ingress
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+  - match: Host(`publishers.storystream.nl`)
+    kind: Rule
+    services:
+    - name: publishers-service
+      port: 80
+  tls:
+    certResolver: letsencrypt
