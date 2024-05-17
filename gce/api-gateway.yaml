@@ -1,0 +1,22 @@
+# openapi2-functions.yaml
+swagger: '2.0'
+info:
+  title: api-gateway
+  description: Sample API on API Gateway with a kubernetes cluster as backend
+  version: 1.0.0
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  /accounts:
+    get:
+      summary: Accounts microservice for the StoryStream platform
+      operationId: accounts
+      x-google-backend:
+        address: "https://accounts.storystream.nl"
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string

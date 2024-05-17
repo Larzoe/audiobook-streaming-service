@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: traefik-dashboard-auth
+  namespace: infra
+
+data:
+  users: aGVzc2VsOiRhcHIxJFphRXRsamRsJHFCbGJrVTJIcXEvT2VpTkM0TkE4Zy8KCg==
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-dashboard-basicauth
+  namespace: infra
+
+spec:
+  basicAuth:
+    secret: traefik-dashboard-auth
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: infra
+
+spec:
+  entryPoints:
+    - websecure
+
+  routes:
+    - match: Host(`traefik.storystream.nl`)
+      kind: Rule
+      middlewares:
+        - name: traefik-dashboard-basicauth
+          namespace: infra
+      services:
+        - name: api@internal
+          kind: TraefikService

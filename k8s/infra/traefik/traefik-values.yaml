@@ -1,48 +1,36 @@
-ports:
-  websecure:
-    appProtocol: HTTPS # Hint for Google L7 load balancer
 service:
-  type: ClusterIP
-extraObjects:
-- apiVersion: gateway.networking.k8s.io/v1beta1
-  kind: Gateway
-  metadata:
-    name: traefik
-    annotations:
-      networking.gke.io/certmap: "myCertificateMap"
   spec:
-    gatewayClassName: gke-l7-global-external-managed
-    addresses:
-    - type: NamedAddress
-      value: "myGlobalIPName"
-    listeners:
-    - name: https
-      protocol: HTTPS
-      port: 443
-- apiVersion: gateway.networking.k8s.io/v1beta1
-  kind: HTTPRoute
-  metadata:
-    name: traefik
-  spec:
-    parentRefs:
-    - kind: Gateway
-      name: traefik
-    rules:
-    - backendRefs:
-      - name: traefik
-        port: 443
-- apiVersion: networking.gke.io/v1
-  kind: HealthCheckPolicy
-  metadata:
-    name: traefik
-  spec:
-    default:
-      config:
-        type: HTTP
-        httpHealthCheck:
-          port: 9000
-          requestPath: /ping
-    targetRef:
-      group: ""
-      kind: Service
-      name: traefik
+    loadBalancerIP: "34.141.168.96"
+
+persistence:
+  enabled: true
+  path: /data
+  size: 1Gi
+
+# better to use cert-manager but not required for this POC
+# do not do this in production
+deployment:
+  initContainers:
+    - name: volume-permissions
+      image: busybox:latest
+      command: ["sh", "-c", "touch /data/acme.json; chown 65532 /data/acme.json; chmod -v 600 /data/acme.json"]
+      securityContext:
+          runAsNonRoot: false
+          runAsGroup: 0
+          runAsUser: 0
+      volumeMounts:
+        - name: data
+          mountPath: /data
+
+additionalArguments:
+  - "--log.level=INFO"
+  - "--global.checknewversion=false"
+  - "--global.sendanonymoususage=false"
+  - "--entrypoints.websecure.http.tls.domains[0].main=storystream.nl"
+  - "--entrypoints.websecure.http.tls.domains[0].sans=*.storystream.nl"
+  - "--providers.kubernetesingress=true"
+  - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+  - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+  - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
+  - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+  - "--certificatesresolvers.letsencrypt.acme.email=hessel@tjeerdsma.eu"
