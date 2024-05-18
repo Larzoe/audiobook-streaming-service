@@ -1,0 +1,7 @@
+steps:
+- name: 'docker/compose:1.29.2'  # Use a specific version of Docker Compose
+  entrypoint: 'sh'
+  args:
+    - '-c'
+    - |
+      docker-compose up -d
