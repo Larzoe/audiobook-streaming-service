@@ -20,3 +20,25 @@ paths:
           description: A successful response
           schema:
             type: string
+    /payments:
+      get:
+        summary: Payments microservice for the StoryStream platform
+        operationId: payments
+        x-google-backend:
+          address: "https://payments.storystream.nl"
+        responses:
+          '200':
+            description: A successful response
+            schema:
+              type: string
+    /publishers:
+      get:
+        summary: Publishers microservice for the StoryStream platform
+        operationId: publishers
+        x-google-backend:
+          address: "https://publishers.storystream.nl"
+        responses:
+          '200':
+            description: A successful response
+            schema:
+              type: string
