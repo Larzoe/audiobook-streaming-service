@@ -1,4 +1,3 @@
-# openapi2-functions.yaml
 swagger: '2.0'
 info:
   title: api-gateway
@@ -20,25 +19,55 @@ paths:
           description: A successful response
           schema:
             type: string
-    /payments:
-      get:
-        summary: Payments microservice for the StoryStream platform
-        operationId: payments
-        x-google-backend:
-          address: "https://payments.storystream.nl"
-        responses:
-          '200':
-            description: A successful response
-            schema:
-              type: string
-    /publishers:
-      get:
-        summary: Publishers microservice for the StoryStream platform
-        operationId: publishers
-        x-google-backend:
-          address: "https://publishers.storystream.nl"
-        responses:
-          '200':
-            description: A successful response
-            schema:
-              type: string
+      security:
+        - auth0_jwk: []
+  /payments:
+    get:
+      summary: Payments microservice for the StoryStream platform
+      operationId: payments
+      x-google-backend:
+        address: "https://payments.storystream.nl"
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string
+      security:
+        - auth0_jwk: []
+  /publishers:
+    get:
+      summary: Publishers microservice for the StoryStream platform
+      operationId: publishers
+      x-google-backend:
+        address: "https://publishers.storystream.nl"
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string
+      security:
+        - auth0_jwk: []
+
+  /echo:
+    get:
+      summary: test url
+      operationId: echo
+      x-google-backend:
+        address: "https://echo.ehv.tjeerdsma.eu/"
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string
+      security:
+        - auth0_jwk: []
+
+
+securityDefinitions:
+  auth0_jwk:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://storystream-jads.eu.auth0.com/"
+    x-google-jwks_uri: "https://storystream-jads.eu.auth0.com/.well-known/jwks.json"
+    x-google-audiences: "AbaMPBs6WVn86TY8Nj17dImhw00OKaFC"
