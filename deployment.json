@@ -5,9 +5,7 @@
       "args": [
         "build",
         "-t",
-        "gcr.io/essential-tower-422709-k9/accounts",
-        "--target",
-        "accounts-service",
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
         "-f",
         "./accounts/Dockerfile",
         "./accounts"
@@ -17,7 +15,7 @@
       "name": "gcr.io/cloud-builders/docker",
       "args": [
         "push",
-        "gcr.io/essential-tower-422709-k9/accounts"
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest"
       ]
     },
     {
@@ -25,9 +23,7 @@
       "args": [
         "build",
         "-t",
-        "gcr.io/essential-tower-422709-k9/catalog",
-        "--target",
-        "catalog-service",
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
         "-f",
         "./catalog/Dockerfile",
         "./catalog"
@@ -37,7 +33,7 @@
       "name": "gcr.io/cloud-builders/docker",
       "args": [
         "push",
-        "gcr.io/essential-tower-422709-k9/catalog"
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest"
       ]
     },
     {
@@ -45,9 +41,7 @@
       "args": [
         "build",
         "-t",
-        "gcr.io/essential-tower-422709-k9/payments",
-        "--target",
-        "payments-service",
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
         "-f",
         "./payments/Dockerfile",
         "./payments"
@@ -57,7 +51,7 @@
       "name": "gcr.io/cloud-builders/docker",
       "args": [
         "push",
-        "gcr.io/essential-tower-422709-k9/payments"
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest"
       ]
     },
     {
@@ -65,9 +59,7 @@
       "args": [
         "build",
         "-t",
-        "gcr.io/essential-tower-422709-k9/publisher",
-        "--target",
-        "publisher-service",
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest",
         "-f",
         "./publisher/Dockerfile",
         "./publisher"
@@ -77,14 +69,14 @@
       "name": "gcr.io/cloud-builders/docker",
       "args": [
         "push",
-        "gcr.io/essential-tower-422709-k9/publisher"
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest"
       ]
     }
   ],
   "images": [
-    "gcr.io/essential-tower-422709-k9/accounts",
-    "gcr.io/essential-tower-422709-k9/catalog",
-    "gcr.io/essential-tower-422709-k9/payments",
-    "gcr.io/essential-tower-422709-k9/publisher"
+    "us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
+    "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
+    "us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
+    "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest"
   ]
 }
