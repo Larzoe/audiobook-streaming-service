@@ -1,0 +1,90 @@
+{
+  "steps": [
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "build",
+        "-t",
+        "gcr.io/essential-tower-422709-k9/accounts",
+        "--target",
+        "accounts-service",
+        "-f",
+        "./accounts/Dockerfile",
+        "./accounts"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "push",
+        "gcr.io/essential-tower-422709-k9/accounts"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "build",
+        "-t",
+        "gcr.io/essential-tower-422709-k9/catalog",
+        "--target",
+        "catalog-service",
+        "-f",
+        "./catalog/Dockerfile",
+        "./catalog"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "push",
+        "gcr.io/essential-tower-422709-k9/catalog"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "build",
+        "-t",
+        "gcr.io/essential-tower-422709-k9/payments",
+        "--target",
+        "payments-service",
+        "-f",
+        "./payments/Dockerfile",
+        "./payments"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "push",
+        "gcr.io/essential-tower-422709-k9/payments"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "build",
+        "-t",
+        "gcr.io/essential-tower-422709-k9/publisher",
+        "--target",
+        "publisher-service",
+        "-f",
+        "./publisher/Dockerfile",
+        "./publisher"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "push",
+        "gcr.io/essential-tower-422709-k9/publisher"
+      ]
+    }
+  ],
+  "images": [
+    "gcr.io/essential-tower-422709-k9/accounts",
+    "gcr.io/essential-tower-422709-k9/catalog",
+    "gcr.io/essential-tower-422709-k9/payments",
+    "gcr.io/essential-tower-422709-k9/publisher"
+  ]
+}
