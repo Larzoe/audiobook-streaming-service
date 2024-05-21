@@ -1,37 +1,69 @@
 version: '3.8'
 
 services:
-  accounts-service:
-    image: us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts-service/accounts-service:latest
+  accounts:
+    build: 
+      context: ./accounts
+      target: accounts-service
     ports:
-      - "8081:8081"
+      - "5000:5000"
     environment:
-      - ENV_VAR=example
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=accounts_db
+      - DATABASE_URL=postgresql://user:password@db/accounts_db
+    depends_on:
+      - db
 
-  audiobook-service:
-    image: us-central1-docker.pkg.dev/essential-tower-422709-k9/audiobook-service/audiobook-service:latest
+  catalog:
+    build: 
+      context: ./catalog
+      target: catalog-service
     ports:
-      - "8082:8082"
+      - "5001:5001"
     environment:
-      - ENV_VAR=example
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=catalog_db
+      - DATABASE_URL=postgresql://user:password@db/catalog_db
+    depends_on:
+      - db
 
-  catalog-service:
-    image: us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog-service/catalog-service:latest
+  payments:
+    build: 
+      context: ./payments
+      target: payments-service
     ports:
-      - "8083:8083"
+      - "5002:5002"
     environment:
-      - ENV_VAR=example
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=payments_db
+      - DATABASE_URL=postgresql://user:password@db/payments_db
+    depends_on:
+      - db
 
-  payments-service:
-    image: us-central1-docker.pkg.dev/essential-tower-422709-k9/payments-service/payments-service:latest
+  publisher:
+    build: 
+      context: ./publisher
+      target: publisher-service
     ports:
-      - "8084:8084"
+      - "5003:5003"
     environment:
-      - ENV_VAR=example
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=publisher_db
+      - DATABASE_URL=postgresql://user:password@db/publisher_db
+    depends_on:
+      - db
 
-  publishers-service:
-    image: us-central1-docker.pkg.dev/essential-tower-422709-k9/publishers-service/publishers-service:latest
-    ports:
-      - "8085:8085"
+  db:
+    image: postgres:13
     environment:
-      - ENV_VAR=example
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
