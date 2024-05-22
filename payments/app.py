@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
 import os
+from notification_client import send_notification
+
 
 DB_PASS = os.environ["DB_PASSWORD"]
 DB_URL = os.environ["DB_URL"]
@@ -53,6 +55,8 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     db.add(new_payment)
     db.commit()
     db.refresh(new_payment)
+    send_notification(f"New payment created: {new_payment.id}")
+
     return new_payment
 
 
@@ -66,6 +70,8 @@ def handle_callback(
         raise HTTPException(status_code=404, detail="Payment not found")
     payment.status = update.status
     db.commit()
+    send_notification(f"Payment {payment_id} status updated to: {update.status}")
+
     return {"message": "Payment status updated successfully"}
 
 

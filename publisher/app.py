@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
 import os
+send_notification(f"Payment {payment_id} status updated to: {update.status}")
+
 
 DB_PASS = os.environ["DB_PASSWORD"]
 DB_URL = os.environ["DB_URL"]
@@ -65,6 +67,7 @@ def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.add(new_audiobook)
     db.commit()
     db.refresh(new_audiobook)
+    send_notification(f"New audiobook added: {new_audiobook.title}")
     return new_audiobook
 
 
@@ -98,4 +101,5 @@ def delete_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
 
     db.delete(db_audiobook)
     db.commit()
+    send_notification(f"Audiobook deleted: {db_audiobook.title}")
     return {"message": "Audiobook deleted successfully"}
