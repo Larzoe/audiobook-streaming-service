@@ -4,8 +4,11 @@ from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
+import os
 
-DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/payments"  # wow this is bad practice, don't do this
+DB_PASS = os.environ["DB_PASSWORD"]
+DB_URL = os.environ["DB_URL"]
+DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow this is bad practice, don't do this
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
