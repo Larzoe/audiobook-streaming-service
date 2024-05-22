@@ -4,6 +4,9 @@ from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
+from pubsub import payment_created, payment_failed, payment_updated, payment_passed
+from google.cloud import pubsub_v1
+import json
 import os
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
@@ -24,6 +27,54 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+subscriber = pubsub_v1.SubscriberClient()
+subscription_path_account_activated = subscriber.subscription_path(
+    "essential-tower-422709-k9", "activate-account-sub"
+)
+subscription_path_account_deactivated = subscriber.subscription_path(
+    "essential-tower-422709-k9", "deactivate-account-sub"
+)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def account_activated_callback(message, db: Session = Depends(get_db)):
+    print(f"Received message on activating account: {message}")
+    user = json.loads(message.data.decode("utf-8"))
+    user_id = user["id"]
+    payment_id = random.randint(1000, 9999)  # Mock payment ID
+    payment = Payment(id=payment_id, user_id=user_id, amount=10.0)
+    db.add(payment)
+    db.commit()
+    payment_created(payment)
+    message.ack()
+
+
+def account_deactivated_callback(message, db: Session = Depends(get_db)):
+    print(f"Received message on deactivating account: {message}")
+    user = json.loads(message.data.decode("utf-8"))
+    user_id = user["id"]
+    payment = db.query(Payment).filter(Payment.user_id == user_id).first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    payment.status = "cancelled"
+    db.commit()
+    message.ack()
+
+
+future = subscriber.subscribe(
+    subscription_path_account_activated, callback=account_activated_callback
+)
+future1 = subscriber.subscribe(
+    subscription_path_account_deactivated, callback=account_deactivated_callback
+)
+
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -47,14 +98,6 @@ class PaymentStatusUpdate(BaseModel):
     status: str
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @app.post("/payments", response_model=PaymentCreate)
 def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     # Simulate payment creation with Mollie
@@ -63,6 +106,7 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     db.add(new_payment)
     db.commit()
     db.refresh(new_payment)
+    payment_created(new_payment)
     send_notification(f"New payment created: {new_payment.id}")
 
     return new_payment
@@ -75,9 +119,11 @@ def handle_callback(
     # Simulate handling a callback from Mollie
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
+        payment_failed(payment.user_id)
         raise HTTPException(status_code=404, detail="Payment not found")
     payment.status = update.status
     db.commit()
+    payment_updated(payment)
     send_notification(f"Payment {payment_id} status updated to: {update.status}")
 
     return {"message": "Payment status updated successfully"}
@@ -162,5 +208,17 @@ def handle_callback(
 def get_payment(payment_id: int, db: Session = Depends(get_db)):
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
+        payment_failed(payment)
         raise HTTPException(status_code=404, detail="Payment not found")
+    payment_passed(payment)
     return payment
+
+
+@app.delete("/payments/{payment_id}", response_model=dict)
+def cancel_payment(payment_id: int, db: Session = Depends(get_db)):
+    payment = db.query(Payment).filter(Payment.id == payment_id).first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    payment.status = "cancelled"
+    db.commit()
+    return {"message": "Payment cancelled successfully"}

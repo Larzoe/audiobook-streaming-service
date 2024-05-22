@@ -4,8 +4,11 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import List
-from notification_client import send_notification
+from google.cloud import pubsub_v1
+import json
+from pubsub import change_book_update, delete_book_update, add_book_update
 
+from notification_client import send_notification
 
 
 import os
@@ -19,6 +22,59 @@ DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow thi
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+subscriber = pubsub_v1.SubscriberClient()
+subscription_path_change = subscriber.subscription_path(
+    "essential-tower-422709-k9", "change-audiobook-sub"
+)
+subscription_path_delete = subscriber.subscription_path(
+    "essential-tower-422709-k9", "delete-audiobook-sub"
+)
+subscription_path_add = subscriber.subscription_path(
+    "essential-tower-422709-k9", "add-audiobook-sub"
+)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def change_book_callback(message, db: Session = Depends(get_db)):
+    print(f"Received message on changing audiobook: {message}")
+    audiobook = json.loads(message.data.decode("utf-8"))
+    audiobook_id = audiobook["id"]
+    db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
+    update_data = audiobook.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_audiobook, key, value)
+    db.commit()
+    message.ack()
+
+
+def delete_book_callback(message, db: Session = Depends(get_db)):
+    print(f"Received message on deleting audiobook: {message}")
+    audiobook = json.loads(message.data.decode("utf-8"))
+    audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook["id"]).first()
+    db.delete(audiobook)
+    db.commit()
+    message.ack()
+
+
+def add_book_callback(message, db: Session = Depends(get_db)):
+    print(f"Received message on adding audiobook: {message}")
+    audiobook = json.loads(message.data.decode("utf-8"))
+    audiobook = Audiobook(
+        title=audiobook.title,
+        author=audiobook.author,
+        genre=audiobook.genre,
+        url=audiobook.url,
+    )
+    db.add(audiobook)
+    db.commit()
+    message.ack()
 
 
 class Audiobook(Base):
@@ -35,6 +91,11 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
+future = subscriber.subscribe(subscription_path_add, callback=add_book_callback)
+future1 = subscriber.subscribe(subscription_path_change, callback=change_book_callback)
+future2 = subscriber.subscribe(subscription_path_delete, callback=delete_book_callback)
+
+
 class AudiobookCreate(BaseModel):
     title: str
     author: str
@@ -47,14 +108,6 @@ class AudiobookUpdate(BaseModel):
     author: str = None
     genre: str = None
     url: str
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @app.get("/audiobooks", response_model=List[AudiobookCreate])
@@ -82,6 +135,7 @@ def create_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.add(db_audiobook)
     db.commit()
     db.refresh(db_audiobook)
+    change_book_update(db_audiobook)
     send_notification(f"New audiobook added: {db_audiobook.title}")
 
     return db_audiobook
@@ -99,6 +153,7 @@ def update_audiobook(
         setattr(db_audiobook, key, value)
     db.commit()
     db.refresh(db_audiobook)
+    add_book_update(db_audiobook)
     return db_audiobook
 
 
@@ -109,4 +164,5 @@ def delete_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Audiobook not found")
     db.delete(db_audiobook)
     db.commit()
+    delete_book_update(db_audiobook)
     return db_audiobook

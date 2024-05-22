@@ -4,6 +4,9 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
+from google.cloud import pubsub_v1
+from pubsub import activate_account, deactivate_account
+import json
 from passlib.context import CryptContext
 from notification_client import send_notification
 import os
@@ -17,6 +20,57 @@ DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow thi
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+subscriber = pubsub_v1.SubscriberClient()
+subscription_path_created = subscriber.subscription_path(
+    "essential-tower-422709-k9", "payment-created-sub"
+)
+subscription_path_updated = subscriber.subscription_path(
+    "essential-tower-422709-k9", "payment-updated-sub"
+)
+subscription_path_failed = subscriber.subscription_path(
+    "essential-tower-422709-k9", "payment-failed-sub"
+)
+subscription_path_passed = subscriber.subscription_path(
+    "essential-tower-422709-k9", "payment-passed-sub"
+)
+
+
+def payment_created_callback(message):
+    print(f"Received message on creating payment: {message}")
+    message.ack()
+
+
+def payment_updated_callback(message):
+    print(f"Received message on updating payment: {message}")
+    message.ack()
+
+
+def payment_failed_callback(message):
+    print(f"Received message on failing payment: {message}")
+    user = json.loads(message.data.decode("utf-8"))
+    user = User(username=user["username"], hashed_password=user["hashed_password"])
+    deactivate_account(user)
+    message.ack()
+
+
+def payment_passed_callback(message):
+    print(f"Received message on passing payment: {message}")
+    message.ack()
+
+
+future = subscriber.subscribe(
+    subscription_path_created, callback=payment_created_callback
+)
+future1 = subscriber.subscribe(
+    subscription_path_updated, callback=payment_updated_callback
+)
+future2 = subscriber.subscribe(
+    subscription_path_failed, callback=payment_failed_callback
+)
+future3 = subscriber.subscribe(
+    subscription_path_passed, callback=payment_passed_callback
+)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -70,11 +124,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_password = get_password_hash(user.password)
     new_user = User(username=user.username, hashed_password=hashed_password)
+    activate_account(new_user)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    
-    #Notification
+
+    # Notification
     send_notification(f"New user registered: {new_user.username}")
 
     return {"message": "User registered successfully"}
@@ -85,8 +140,17 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = get_user_by_username(db, user.username)
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    #Notification
+
+    # Notification
     send_notification(f"User logged in: {user.username}")
 
     return {"message": "Login successful"}
+
+
+@app.post("/deactivate", response_model=dict)
+def deactivate(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = get_user_by_username(db, user.username)
+    if not db_user or not verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    deactivate_account(db_user)
+    return {"message": "Account deactivated successfully"}
