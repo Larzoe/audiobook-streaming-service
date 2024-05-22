@@ -23,6 +23,24 @@
       "args": [
         "build",
         "-t",
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/notifications/notifications:latest",
+        "-f",
+        "./notifications/Dockerfile",
+        "./notifications"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "push",
+        "us-central1-docker.pkg.dev/essential-tower-422709-k9/notifications/notifications:latest"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "build",
+        "-t",
         "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
         "-f",
         "./catalog/Dockerfile",
@@ -81,43 +99,51 @@
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/gke-deploy",
+      "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
-        "run",
-        "--filename=k8s/apps/production/accounts.yaml",
-        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
-        "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "apply",
+        "-f",
+        "k8s/apps/production/accounts.yaml"
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/gke-deploy",
+      "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
-        "run",
-        "--filename=k8s/apps/production/catalog.yaml",
-        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
-        "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "apply",
+        "-f",
+        "k8s/apps/production/catalog.yaml"
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/gke-deploy",
+      "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
-        "run",
-        "--filename=k8s/apps/production/payments.yaml",
-        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
-        "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "apply",
+        "-f",
+        "k8s/apps/production/payments.yaml"
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/gke-deploy",
+      "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
-        "run",
-        "--filename=k8s/apps/production/publisher.yaml",
-        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest",
-        "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "apply",
+        "-f",
+        "k8s/apps/production/publisher.yaml"
       ]
     }
   ],
@@ -125,6 +151,7 @@
     "us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
     "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
     "us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
-    "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest"
+    "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest",
+    "us-central1-docker.pkg.dev/essential-tower-422709-k9/notification/notification:latest"
   ]
 }
