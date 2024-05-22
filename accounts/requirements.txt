@@ -4,3 +4,4 @@ sqlalchemy==1.4.27
 psycopg2-binary==2.9.2
 pydantic==1.9.0
 passlib[bcrypt]==1.7.4
+requests
