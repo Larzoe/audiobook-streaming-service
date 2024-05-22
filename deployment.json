@@ -75,6 +75,10 @@
     {
       "name": "gcr.io/cloud-builders/gcloud",
       "entrypoint": "bash",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
         "-c",
         "gcloud container clusters get-credentials stroystream-cluster --zone europe-west4 --project essential-tower-422709-k9"
