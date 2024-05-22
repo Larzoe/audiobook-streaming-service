@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from typing import List
 from google.cloud import pubsub_v1
 import json
+from pubsub import change_book_update, delete_book_update, add_book_update
 
 # DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
 DATABASE_URL = "sqlite:///./catalog.sqlite"
@@ -127,6 +128,7 @@ def create_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.add(db_audiobook)
     db.commit()
     db.refresh(db_audiobook)
+    change_book_update(db_audiobook)
     return db_audiobook
 
 
@@ -142,6 +144,7 @@ def update_audiobook(
         setattr(db_audiobook, key, value)
     db.commit()
     db.refresh(db_audiobook)
+    add_book_update(db_audiobook)
     return db_audiobook
 
 
@@ -152,4 +155,5 @@ def delete_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Audiobook not found")
     db.delete(db_audiobook)
     db.commit()
+    delete_book_update(db_audiobook)
     return db_audiobook
