@@ -71,6 +71,46 @@
         "push",
         "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest"
       ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/gcloud",
+      "entrypoint": "bash",
+      "args": [
+        "-c",
+        "gcloud container clusters get-credentials stroystream-cluster --zone europe-west4 --project essential-tower-422709-k9"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/kubectl",
+      "args": [
+        "apply",
+        "-f",
+        "k8s/apps/production/accounts.yaml"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/kubectl",
+      "args": [
+        "apply",
+        "-f",
+        "k8s/apps/production/catalog.yaml"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/kubectl",
+      "args": [
+        "apply",
+        "-f",
+        "k8s/apps/production/payments.yaml"
+      ]
+    },
+    {
+      "name": "gcr.io/cloud-builders/kubectl",
+      "args": [
+        "apply",
+        "-f",
+        "k8s/apps/production/publishers.yaml"
+      ]
     }
   ],
   "images": [
