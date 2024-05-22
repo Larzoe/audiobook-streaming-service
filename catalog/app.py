@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import List
 from google.cloud import pubsub_v1
+import json
 
 # DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
 DATABASE_URL = "sqlite:///./catalog.sqlite"
@@ -35,28 +36,36 @@ def get_db():
 
 def change_book_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on changing audiobook: {message}")
-    # audiobook_update, audiobook_id = message.data.decode("utf-8").split(",")
-    # db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
-    # update_data = audiobook_update.dict(exclude_unset=True)
-    # for key, value in update_data.items():
-    #    setattr(db_audiobook, key, value)
-    # db.commit()
+    audiobook = json.loads(message.data.decode("utf-8"))
+    audiobook_id = audiobook["id"]
+    db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
+    update_data = audiobook.dict(exclude_unset=True)
+    for key, value in update_data.items():
+       setattr(db_audiobook, key, value)
+    db.commit()
     message.ack()
 
 
 def delete_book_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on deleting audiobook: {message}")
-    # audiobook = message.data.decode("utf-8")
-    # db.delete(audiobook)
-    # db.commit()
+    audiobook = json.loads(message.data.decode("utf-8"))
+    audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook["id"]).first()
+    db.delete(audiobook)
+    db.commit()
     message.ack()
 
 
 def add_book_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on adding audiobook: {message}")
-    # audiobook = message.data.decode("utf-8")
-    # db.add(audiobook)
-    # db.commit()
+    audiobook = json.loads(message.data.decode("utf-8"))
+    audiobook = Audiobook(
+        title=audiobook.title,
+        author=audiobook.author,
+        genre=audiobook.genre,
+        url=audiobook.url,
+    )
+    db.add(audiobook)
+    db.commit()
     message.ack()
 
 

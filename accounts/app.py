@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
 from google.cloud import pubsub_v1
 from pubsub import activate_account, deactivate_account
+import json
 
 DATABASE_URL = "postgresql://user:password@db/accounts_db"
 
@@ -29,7 +30,8 @@ def payment_updated_callback(message):
     
 def payment_failed_callback(message):
     print(f"Received message on failing payment: {message}")
-    user = message.data.decode("utf-8")
+    user = json.loads(message.data.decode("utf-8"))
+    user = User(username=user["username"], hashed_password=user["hashed_password"])
     deactivate_account(user)
     message.ack()
     
@@ -37,17 +39,10 @@ def payment_passed_callback(message):
     print(f"Received message on passing payment: {message}")
     message.ack()
     
-def start_subscription(subscription_path, callback):
-    future = subscriber.subscribe(subscription_path, callback=callback)
-    try:
-        future.result()
-    except KeyboardInterrupt:
-        future.cancel()
-        
-start_subscription(subscription_path_created, payment_created_callback)
-start_subscription(subscription_path_updated, payment_updated_callback)
-start_subscription(subscription_path_failed, payment_failed_callback)
-start_subscription(subscription_path_passed, payment_passed_callback)
+future = subscriber.subscribe(subscription_path_created, callback=payment_created_callback)
+future1 = subscriber.subscribe(subscription_path_updated, callback=payment_updated_callback)
+future2 = subscriber.subscribe(subscription_path_failed, callback=payment_failed_callback)
+future3 = subscriber.subscribe(subscription_path_passed, callback=payment_passed_callback)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -104,3 +99,11 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return {"message": "Login successful"}
+
+@app.post("/deactivate", response_model=dict)
+def deactivate(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = get_user_by_username(db, user.username)
+    if not db_user or not verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    deactivate_account(db_user)
+    return {"message": "Account deactivated successfully"}

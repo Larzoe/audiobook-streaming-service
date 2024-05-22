@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import random
 from pubsub import payment_created, payment_failed, payment_updated, payment_passed
 from google.cloud import pubsub_v1
+import json
 
 DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/payments"  # wow this is bad practice, don't do this
 
@@ -26,27 +27,28 @@ def get_db():
 
 def account_activated_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on activating account: {message}")
-    user = message.data.decode("utf-8")
+    user = json.loads(message.data.decode("utf-8"))
+    user_id = user["id"]
     payment_id = random.randint(1000, 9999)  # Mock payment ID
-    payment = Payment(id=payment_id, user_id=user, amount=10.0)
+    payment = Payment(id=payment_id, user_id=user_id, amount=10.0)
     db.add(payment)
     db.commit()
-    payment_updated(payment)
+    payment_created(payment)
     message.ack()
     
-def account_deactivated_callback(message):
+def account_deactivated_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on deactivating account: {message}")
+    user = json.loads(message.data.decode("utf-8"))
+    user_id = user["id"]
+    payment = db.query(Payment).filter(Payment.user_id == user_id).first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    payment.status = "cancelled"
+    db.commit()
     message.ack()
     
-def start_subscription(subscription_path, callback):
-    future = subscriber.subscribe(subscription_path, callback=callback)
-    try:
-        future.result()
-    except KeyboardInterrupt:
-        future.cancel()
-        
-start_subscription(subscription_path_account_activated, account_activated_callback)
-start_subscription(subscription_path_account_deactivated, account_deactivated_callback)
+future = subscriber.subscribe(subscription_path_account_activated, callback=account_activated_callback)
+future1 = subscriber.subscribe(subscription_path_account_deactivated, callback=account_deactivated_callback)
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -106,3 +108,13 @@ def get_payment(payment_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Payment not found")
     payment_passed(payment)
     return payment
+
+
+@app.delete("/payments/{payment_id}", response_model=dict)
+def cancel_payment(payment_id: int, db: Session = Depends(get_db)):
+    payment = db.query(Payment).filter(Payment.id == payment_id).first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    payment.status = "cancelled"
+    db.commit()
+    return {"message": "Payment cancelled successfully"}
