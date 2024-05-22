@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: accounts-container
-          image: nginxdemos/hello
+          image: us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts-service/accounts-service:latest
           ports:
           - containerPort: 80
           env:
