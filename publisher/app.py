@@ -53,9 +53,7 @@ def get_db():
 @app.post("/audiobooks", response_model=AudiobookCreate)
 def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     # Simulate adding an audiobook
-    audiobook_id = random.randint(1000, 9999)  # Mock audiobook ID
     new_audiobook = Audiobook(
-        id=audiobook_id,
         title=audiobook.title,
         author=audiobook.author,
         genre=audiobook.genre,
