@@ -1,78 +1,6 @@
 {
   "steps": [
     {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "build",
-        "-t",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
-        "-f",
-        "./accounts/Dockerfile",
-        "./accounts"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "push",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "build",
-        "-t",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
-        "-f",
-        "./catalog/Dockerfile",
-        "./catalog"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "push",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "build",
-        "-t",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
-        "-f",
-        "./payments/Dockerfile",
-        "./payments"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "push",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "build",
-        "-t",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest",
-        "-f",
-        "./publisher/Dockerfile",
-        "./publisher"
-      ]
-    },
-    {
-      "name": "gcr.io/cloud-builders/docker",
-      "args": [
-        "push",
-        "us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest"
-      ]
-    },
-    {
       "name": "gcr.io/cloud-builders/gcloud",
       "entrypoint": "bash",
       "args": [
@@ -81,51 +9,43 @@
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/kubectl",
-      "env": [
-        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
-        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
-      ],
+      "name": "gcr.io/cloud-builders/gke-deploy",
       "args": [
-        "apply",
-        "-f",
-        "k8s/apps/production/accounts.yaml"
+        "run",
+        "--filename=k8s/apps/production/accounts.yaml",
+        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
+        "--location=europe-west4",
+        "--cluster=stroystream-cluster"
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/kubectl",
-      "env": [
-        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
-        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
-      ],
+      "name": "gcr.io/cloud-builders/gke-deploy",
       "args": [
-        "apply",
-        "-f",
-        "k8s/apps/production/catalog.yaml"
+        "run",
+        "--filename=k8s/apps/production/catalog.yaml",
+        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
+        "--location=europe-west4",
+        "--cluster=stroystream-cluster"
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/kubectl",
-      "env": [
-        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
-        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
-      ],
+      "name": "gcr.io/cloud-builders/gke-deploy",
       "args": [
-        "apply",
-        "-f",
-        "k8s/apps/production/payments.yaml"
+        "run",
+        "--filename=k8s/apps/production/payments.yaml",
+        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
+        "--location=europe-west4",
+        "--cluster=stroystream-cluster"
       ]
     },
     {
-      "name": "gcr.io/cloud-builders/kubectl",
-      "env": [
-        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
-        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
-      ],
+      "name": "gcr.io/cloud-builders/gke-deploy",
       "args": [
-        "apply",
-        "-f",
-        "k8s/apps/production/publisher.yaml"
+        "run",
+        "--filename=k8s/apps/production/publisher.yaml",
+        "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest",
+        "--location=europe-west4",
+        "--cluster=stroystream-cluster"
       ]
     }
   ],
