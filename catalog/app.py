@@ -80,6 +80,8 @@ def create_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.add(db_audiobook)
     db.commit()
     db.refresh(db_audiobook)
+    send_notification(f"New audiobook added: {db_audiobook.title}")
+
     return db_audiobook
 
 
