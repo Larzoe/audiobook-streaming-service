@@ -6,12 +6,12 @@ WORKDIR /app
 
 # Copy the necessary files to the working directory
 COPY . /app
-
+RUN apt-get update && apt-get install -y protobuf-compiler
 # Install the required dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Generate the Python code from the Protobuf files
-RUN protoc -I=./proto --python_out=./proto ./proto/notification.proto
+RUN protoc -I=./ --python_out=./proto ./notification.proto
 
 # Set the environment variable for the Protobuf Python module
 ENV PYTHONPATH "${PYTHONPATH}:/app/proto"
