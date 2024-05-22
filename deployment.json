@@ -86,6 +86,10 @@
     },
     {
       "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
         "apply",
         "-f",
@@ -94,6 +98,10 @@
     },
     {
       "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
         "apply",
         "-f",
@@ -102,6 +110,10 @@
     },
     {
       "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
         "apply",
         "-f",
@@ -110,6 +122,10 @@
     },
     {
       "name": "gcr.io/cloud-builders/kubectl",
+      "env": [
+        "CLOUDSDK_COMPUTE_ZONE=europe-west4",
+        "CLOUDSDK_CONTAINER_CLUSTER=stroystream-cluster"
+      ],
       "args": [
         "apply",
         "-f",
