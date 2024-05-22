@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: payments-container
-        image: us-central1-docker.pkg.dev/essential-tower-422709-k9/payments-service/payments-service:latest
+        image: us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payment:latest
         ports:
         - containerPort: 80
         env:

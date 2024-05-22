@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: accounts-container
-          image: us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts-service/accounts-service:latest
+          image: us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest
           ports:
           - containerPort: 80
           env:

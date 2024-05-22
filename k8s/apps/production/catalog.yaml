@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: catalog-container
-        image: us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog-service/catalog-service:latest
+        image: us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest
         ports:
         - containerPort: 80
         env:
