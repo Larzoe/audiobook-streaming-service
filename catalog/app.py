@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from typing import List
 
 DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
 
@@ -47,7 +48,7 @@ def get_db():
         db.close()
 
 
-@app.get("/audiobooks", response_model=list[AudiobookCreate])
+@app.get("/audiobooks", response_model=List[AudiobookCreate])
 def get_audiobooks(db: Session = Depends(get_db)):
     audiobooks = db.query(Audiobook).all()
     return audiobooks
