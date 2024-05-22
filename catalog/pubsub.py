@@ -1,10 +1,18 @@
 from google.cloud import pubsub_v1
 
 subscriber = pubsub_v1.SubscriberClient()
-subscription_path_change = subscriber.subscription_path("essential-tower-422709-k9", "change-audiobook-sub")
-subscription_path_delete = subscriber.subscription_path("essential-tower-422709-k9", "delete-audiobook-sub")
-subscription_path_add = subscriber.subscription_path("essential-tower-422709-k9", "add-audiobook-sub")
+subscription_path_change = subscriber.subscription_path(
+    "essential-tower-422709-k9", "change-audiobook-sub"
+)
+subscription_path_delete = subscriber.subscription_path(
+    "essential-tower-422709-k9", "delete-audiobook-sub"
+)
+subscription_path_add = subscriber.subscription_path(
+    "essential-tower-422709-k9", "add-audiobook-sub"
+)
 
+
+"""
 def change_book_callback(message):
     print(f"Received message on changing audiobook: {message}")
     message.ack()
@@ -32,4 +40,4 @@ def initialize_pubsub():
             start_subscription(subscription, delete_book_callback)
         elif subscription == subscription_path_add:
             start_subscription(subscription, add_book_callback)
-        
+        """

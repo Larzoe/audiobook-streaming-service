@@ -4,13 +4,65 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import List
-from pubsub import initialize_pubsub
 
-DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
+# DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
+DATABASE_URL = "sqlite:///./catalog.sqlite"
+
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+
+from google.cloud import pubsub_v1
+
+subscriber = pubsub_v1.SubscriberClient()
+subscription_path_change = subscriber.subscription_path(
+    "essential-tower-422709-k9", "change-audiobook-sub"
+)
+subscription_path_delete = subscriber.subscription_path(
+    "essential-tower-422709-k9", "delete-audiobook-sub"
+)
+subscription_path_add = subscriber.subscription_path(
+    "essential-tower-422709-k9", "add-audiobook-sub"
+)
+
+
+def change_book_callback(message):
+    print(f"Received message on changing audiobook: {message}")
+    message.ack()
+
+
+def delete_book_callback(message):
+    print(f"Received message on deleting audiobook: {message}")
+    message.ack()
+
+
+def add_book_callback(message):
+    print(f"Received message on adding audiobook: {message}")
+    message.ack()
+
+
+def start_subscription(subscription_path, callback):
+    future = subscriber.subscribe(subscription_path, callback=callback)
+    try:
+        future.result()
+    except KeyboardInterrupt:
+        future.cancel()
+
+
+def initialize_pubsub():
+    for subscription in [
+        subscription_path_change,
+        subscription_path_delete,
+        subscription_path_add,
+    ]:
+        if subscription == subscription_path_change:
+            start_subscription(subscription, change_book_callback)
+        elif subscription == subscription_path_delete:
+            start_subscription(subscription, delete_book_callback)
+        elif subscription == subscription_path_add:
+            start_subscription(subscription_path_add, add_book_callback)
 
 
 class Audiobook(Base):
@@ -26,7 +78,8 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-initialize_pubsub()
+start_subscription(subscription_path_add, add_book_callback)
+
 
 class AudiobookCreate(BaseModel):
     title: str

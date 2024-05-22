@@ -7,7 +7,7 @@ import random
 from pubsub import change_book_update, delete_book_update, add_book_update
 
 # DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/publisher"  # wow this is bad practice, don't do this
-DATABASE_URL = "sqlite:///./catalog_db.sqlite"
+DATABASE_URL = "sqlite:///./publisher.sqlite"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
