@@ -4,9 +4,13 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
+from passlib.context import CryptContext
 from notification_client import send_notification
+import os
 
-DATABASE_URL = "postgresql://user:password@db/accounts_db"
+DB_PASS = os.environ["DB_PASSWORD"]
+DB_URL = os.environ["DB_URL"]
+DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow this is bad practice, don't do this
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -14,23 +18,28 @@ Base = declarative_base()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 
 class UserCreate(BaseModel):
     username: str
     password: str
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 def get_db():
     db = SessionLocal()
@@ -39,14 +48,18 @@ def get_db():
     finally:
         db.close()
 
+
 def get_user_by_username(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
+
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password):
     return pwd_context.hash(password)
+
 
 @app.post("/register", response_model=dict)
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -63,6 +76,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     send_notification(f"New user registered: {new_user.username}")
 
     return {"message": "User registered successfully"}
+
 
 @app.post("/login", response_model=dict)
 def login(user: UserLogin, db: Session = Depends(get_db)):

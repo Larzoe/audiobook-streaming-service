@@ -18,7 +18,10 @@ spec:
         - name: accounts-container
           image: us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest
           ports:
-          - containerPort: 80
+          - containerPort: 5000
+          envFrom:
+          - secretRef:
+              name: credentials
           env:
           - name: ENVIRONMENT
             value: "production"
@@ -39,8 +42,8 @@ spec:
     app: accounts
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 5000
+      targetPort: 5000
   type: ClusterIP
 ---
 apiVersion: traefik.io/v1alpha1
@@ -56,6 +59,6 @@ spec:
     kind: Rule
     services:
     - name: accounts-service
-      port: 80
+      port: 5000
   tls:
     certResolver: letsencrypt

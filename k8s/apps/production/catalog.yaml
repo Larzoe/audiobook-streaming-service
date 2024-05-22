@@ -19,6 +19,9 @@ spec:
         image: us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest
         ports:
         - containerPort: 5001
+        envFrom:
+          - secretRef:
+              name: credentials
         env:
         - name: ENVIRONMENT
           value: "production"

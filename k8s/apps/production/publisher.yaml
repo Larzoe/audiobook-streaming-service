@@ -16,6 +16,9 @@ spec:
     spec:
       containers:
       - name: publishers-container
+        envFrom:
+          - secretRef:
+              name: credentials
         image: us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest
         ports:
         - containerPort: 5001
