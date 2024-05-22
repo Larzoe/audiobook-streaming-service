@@ -18,7 +18,7 @@ spec:
       - name: catalog-container
         image: us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest
         ports:
-        - containerPort: 5001
+        - containerPort: 5000
         envFrom:
           - secretRef:
               name: credentials
@@ -42,8 +42,8 @@ spec:
     app: catalog
   ports:
     - protocol: TCP
-      port: 5001
-      targetPort: 5001
+      port: 5000
+      targetPort: 5000
   type: ClusterIP
 ---
 apiVersion: traefik.io/v1alpha1
