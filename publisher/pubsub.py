@@ -15,7 +15,7 @@ def delete_book_update(audiobook):
     future = publisher.publish(topic_path_delete, data)
     print(f"Published message on deleting audiobook: {future.result()}")
     
-def add_book_update(audiobook):
-    data = str(audiobook).encode("utf-8")
+def add_book_update(audiobook, audiobook_id):
+    data = f"{audiobook},{audiobook_id}".encode("utf-8")
     future = publisher.publish(topic_path_add, data)
     print(f"Published message on adding audiobook: {future.result()}")

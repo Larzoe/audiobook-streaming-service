@@ -11,8 +11,8 @@ def payment_created(payment):
     future = publisher.publish(payment_created_topic, data)
     print(f"Published message on creating payment: {future.result()}")
     
-def payment_failed(payment):
-    data = str(payment).encode("utf-8")
+def payment_failed(user):
+    data = str(user).encode("utf-8")
     future = publisher.publish(payment_failed_topic, data)
     print(f"Published message on failing payment: {future.result()}")
     
@@ -25,3 +25,4 @@ def payment_passed(payment):
     data = str(payment).encode("utf-8")
     future = publisher.publish(payment_passed_topic, data)
     print(f"Published message on passing payment: {future.result()}")
+    

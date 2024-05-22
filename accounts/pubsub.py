@@ -1,5 +1,19 @@
 from google.cloud import pubsub_v1
 
+publisher = pubsub_v1.PublisherClient()
+activate_account_topic = publisher.topic_path("essential-tower-422709-k9", "activate-account")
+deactivate_account_topic = publisher.topic_path("essential-tower-422709-k9", "deactivate-account")
+
+def activate_account(user):
+    data = str(user).encode("utf-8")
+    future = publisher.publish(activate_account_topic, data)
+    print(f"Published message on activating account: {future.result()}")
+    
+def deactivate_account(user):
+    data = str(user).encode("utf-8")
+    future = publisher.publish(deactivate_account_topic, data)
+    print(f"Published message on deactivating account: {future.result()}")
+
 subscriber = pubsub_v1.SubscriberClient()
 subscription_path_created = subscriber.subscription_path("essential-tower-422709-k9", "payment-created-sub")
 subscription_path_updated = subscriber.subscription_path("essential-tower-422709-k9", "payment-updated-sub")
