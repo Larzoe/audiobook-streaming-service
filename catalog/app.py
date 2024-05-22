@@ -13,8 +13,6 @@ DATABASE_URL = "sqlite:///./catalog.sqlite"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
-
 subscriber = pubsub_v1.SubscriberClient()
 subscription_path_change = subscriber.subscription_path(
     "essential-tower-422709-k9", "change-audiobook-sub"
@@ -26,6 +24,7 @@ subscription_path_add = subscriber.subscription_path(
     "essential-tower-422709-k9", "add-audiobook-sub"
 )
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -33,39 +32,32 @@ def get_db():
     finally:
         db.close()
 
+
 def change_book_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on changing audiobook: {message}")
-    audiobook_update, audiobook_id = message.data.decode("utf-8").split(",")
-    db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
-    update_data = audiobook_update.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_audiobook, key, value)
-    db.commit()
+    # audiobook_update, audiobook_id = message.data.decode("utf-8").split(",")
+    # db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
+    # update_data = audiobook_update.dict(exclude_unset=True)
+    # for key, value in update_data.items():
+    #    setattr(db_audiobook, key, value)
+    # db.commit()
     message.ack()
 
 
 def delete_book_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on deleting audiobook: {message}")
-    audiobook = message.data.decode("utf-8")
-    db.delete(audiobook)
-    db.commit()
+    # audiobook = message.data.decode("utf-8")
+    # db.delete(audiobook)
+    # db.commit()
     message.ack()
 
 
 def add_book_callback(message, db: Session = Depends(get_db)):
     print(f"Received message on adding audiobook: {message}")
-    audiobook = message.data.decode("utf-8")
-    db.add(audiobook)
-    db.commit()
+    # audiobook = message.data.decode("utf-8")
+    # db.add(audiobook)
+    # db.commit()
     message.ack()
-
-
-def start_subscription(subscription_path, callback):
-    future = subscriber.subscribe(subscription_path, callback=callback)
-    try:
-        future.result()
-    except KeyboardInterrupt:
-        future.cancel()        
 
 
 class Audiobook(Base):
@@ -81,9 +73,10 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-start_subscription(subscription_path_add, add_book_callback)
-start_subscription(subscription_path_delete, delete_book_callback)
-start_subscription(subscription_path_change, change_book_callback)
+
+future = subscriber.subscribe(subscription_path_add, callback=add_book_callback)
+future1 = subscriber.subscribe(subscription_path_change, callback=change_book_callback)
+future2 = subscriber.subscribe(subscription_path_delete, callback=delete_book_callback)
 
 
 class AudiobookCreate(BaseModel):
