@@ -4,8 +4,9 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
+from passlib.context import CryptContext
+from notification_client import send_notification
 import os
-
 
 DB_PASS = os.environ["DB_PASSWORD"]
 DB_URL = os.environ["DB_URL"]
@@ -70,6 +71,10 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    #Notification
+    send_notification(f"New user registered: {new_user.username}")
+
     return {"message": "User registered successfully"}
 
 
@@ -78,4 +83,8 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = get_user_by_username(db, user.username)
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    #Notification
+    send_notification(f"User logged in: {user.username}")
+
     return {"message": "Login successful"}
