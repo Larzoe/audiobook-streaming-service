@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from passlib.context import CryptContext
+from pubsub import initialize_pubsub
 
 DATABASE_URL = "postgresql://user:password@db/accounts_db"
 
@@ -22,6 +23,8 @@ class User(Base):
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+initialize_pubsub()
 
 class UserCreate(BaseModel):
     username: str

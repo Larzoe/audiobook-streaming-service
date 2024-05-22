@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import List
+from pubsub import initialize_pubsub
 
 DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
 
@@ -25,6 +26,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+initialize_pubsub()
 
 class AudiobookCreate(BaseModel):
     title: str

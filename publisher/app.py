@@ -4,8 +4,10 @@ from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
+from pubsub import change_book_update, delete_book_update, add_book_update
 
-DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/publisher"  # wow this is bad practice, don't do this
+# DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/publisher"  # wow this is bad practice, don't do this
+DATABASE_URL = "sqlite:///./catalog_db.sqlite"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -62,6 +64,7 @@ def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.add(new_audiobook)
     db.commit()
     db.refresh(new_audiobook)
+    add_book_update(new_audiobook)
     return new_audiobook
 
 
@@ -84,6 +87,7 @@ def update_audiobook(
 
     db.commit()
     db.refresh(db_audiobook)
+    change_book_update(db_audiobook)
     return db_audiobook
 
 
@@ -95,4 +99,5 @@ def delete_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
 
     db.delete(db_audiobook)
     db.commit()
+    delete_book_update(db_audiobook)
     return {"message": "Audiobook deleted successfully"}

@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
+from pubsub import payment_created, payment_failed, payment_updated, payment_passed
 
 DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/payments"  # wow this is bad practice, don't do this
 
@@ -50,6 +51,7 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     db.add(new_payment)
     db.commit()
     db.refresh(new_payment)
+    payment_created(new_payment)
     return new_payment
 
 
@@ -60,9 +62,11 @@ def handle_callback(
     # Simulate handling a callback from Mollie
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
+        payment_failed(payment)
         raise HTTPException(status_code=404, detail="Payment not found")
     payment.status = update.status
     db.commit()
+    payment_updated(payment)
     return {"message": "Payment status updated successfully"}
 
 
@@ -70,5 +74,7 @@ def handle_callback(
 def get_payment(payment_id: int, db: Session = Depends(get_db)):
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
+        payment_failed(payment)
         raise HTTPException(status_code=404, detail="Payment not found")
+    payment_passed(payment)
     return payment
