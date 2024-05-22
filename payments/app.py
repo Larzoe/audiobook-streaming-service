@@ -152,6 +152,8 @@ def handle_callback(
         raise HTTPException(status_code=404, detail="Payment not found")
     payment.status = update.status
     db.commit()
+    send_notification(f"Payment {payment_id} status updated to: {update.status}")
+
     return {"message": "Payment status updated successfully"}
 
 
