@@ -5,11 +5,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import random
 
-DATABASE_URL = "postgresql://user:password@db/payments_db"
+DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/payments"  # wow this is bad practice, don't do this
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -18,16 +19,20 @@ class Payment(Base):
     amount = Column(Float, nullable=False)
     status = Column(String, default="pending")
 
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 
 class PaymentCreate(BaseModel):
     user_id: int
     amount: float
 
+
 class PaymentStatusUpdate(BaseModel):
     status: str
+
 
 def get_db():
     db = SessionLocal()
@@ -35,6 +40,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @app.post("/payments", response_model=PaymentCreate)
 def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
@@ -46,8 +52,11 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     db.refresh(new_payment)
     return new_payment
 
+
 @app.post("/payments/{payment_id}/callback", response_model=dict)
-def handle_callback(payment_id: int, update: PaymentStatusUpdate, db: Session = Depends(get_db)):
+def handle_callback(
+    payment_id: int, update: PaymentStatusUpdate, db: Session = Depends(get_db)
+):
     # Simulate handling a callback from Mollie
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
@@ -55,6 +64,7 @@ def handle_callback(payment_id: int, update: PaymentStatusUpdate, db: Session = 
     payment.status = update.status
     db.commit()
     return {"message": "Payment status updated successfully"}
+
 
 @app.get("/payments/{payment_id}", response_model=PaymentCreate)
 def get_payment(payment_id: int, db: Session = Depends(get_db)):
