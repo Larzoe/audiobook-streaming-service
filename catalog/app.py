@@ -8,9 +8,16 @@ from google.cloud import pubsub_v1
 import json
 from pubsub import change_book_update, delete_book_update, add_book_update
 
-# DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/catalog_db"  # wow this is bad practice, don't do this
-DATABASE_URL = "sqlite:///./catalog.sqlite"
+from notification_client import send_notification
 
+
+import os
+
+DB_PASS = os.environ["DB_PASSWORD"]
+DB_URL = os.environ["DB_URL"]
+CL_RUN_URL = os.environ["CL_URL"]
+
+DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow this is bad practice, don't do this
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -42,7 +49,7 @@ def change_book_callback(message, db: Session = Depends(get_db)):
     db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
     update_data = audiobook.dict(exclude_unset=True)
     for key, value in update_data.items():
-       setattr(db_audiobook, key, value)
+        setattr(db_audiobook, key, value)
     db.commit()
     message.ack()
 
@@ -129,6 +136,8 @@ def create_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_audiobook)
     change_book_update(db_audiobook)
+    send_notification(f"New audiobook added: {db_audiobook.title}")
+
     return db_audiobook
 
 

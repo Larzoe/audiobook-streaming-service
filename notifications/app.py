@@ -1,20 +1,31 @@
-from concurrent import futures
-import grpc
-import notification_pb2
-import notification_pb2_grpc
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+import random
+import os
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+import random
+import os
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-class NotificationService(notification_pb2_grpc.NotificationServiceServicer):
-    def SendNotification(self, request, context):
-        # Logic to send notification
-        print(f"Sending notification to {request.userId}: {request.message}")
-        return notification_pb2.NotificationResponse(result='Notification sent successfully!')
+app = FastAPI()
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    notification_pb2_grpc.add_NotificationServiceServicer_to_server(NotificationService(), server)
-    server.add_insecure_port('[::]:50051')
-    server.start()
-    server.wait_for_termination()
+class NotificationRequest(BaseModel):
+    message: str
 
-if __name__ == '__main__':
-    serve()
+@app.post("/send-notification")
+async def send_notification(request: NotificationRequest):
+    print(f"Received message: {request.message}")
+    return {"status": "Message received"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+    return payment

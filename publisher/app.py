@@ -8,7 +8,15 @@ from pubsub import change_book_update, delete_book_update, add_book_update
 from google.cloud import pubsub_v1
 
 # DATABASE_URL = "postgresql://postgres:L7je8QQ29u3R6GDC@34.91.96.229/publisher"  # wow this is bad practice, don't do this
-DATABASE_URL = "sqlite:///./publisher.sqlite"
+import os
+from notification_client import send_notification
+
+
+DB_PASS = os.environ["DB_PASSWORD"]
+DB_URL = os.environ["DB_URL"]
+CL_RUN_URL = os.environ["CL_URL"]
+
+DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow this is bad practice, don't do this
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -40,6 +48,7 @@ def add_book_callback(message):
     print(f"Received message on adding audiobook: {message}")
     message.ack()
 
+
 class Audiobook(Base):
     __tablename__ = "audiobooks"
     id = Column(Integer, primary_key=True, index=True)
@@ -56,6 +65,7 @@ app = FastAPI()
 future = subscriber.subscribe(subscription_path_add, callback=add_book_callback)
 future1 = subscriber.subscribe(subscription_path_change, callback=change_book_callback)
 future2 = subscriber.subscribe(subscription_path_delete, callback=delete_book_callback)
+
 
 class AudiobookCreate(BaseModel):
     title: str
@@ -92,6 +102,8 @@ def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_audiobook)
     add_book_update(new_audiobook)
+    send_notification(f"New audiobook added: {new_audiobook.title}")
+
     return new_audiobook
 
 
@@ -115,6 +127,9 @@ def update_audiobook(
     db.commit()
     db.refresh(db_audiobook)
     change_book_update(db_audiobook)
+
+    send_notification(f"Audiobook updated: {db_audiobook.title}")
+
     return db_audiobook
 
 
@@ -127,4 +142,6 @@ def delete_audiobook(audiobook_id: int, db: Session = Depends(get_db)):
     db.delete(db_audiobook)
     db.commit()
     delete_book_update(db_audiobook)
+    send_notification(f"Audiobook deleted: {db_audiobook.title}")
+
     return {"message": "Audiobook deleted successfully"}
