@@ -109,7 +109,7 @@ class AudiobookCreate(BaseModel):
 
 
 class AudiobookReturn(BaseModel):
-    id: int
+    id: str
     title: str
     author: str
     genre: str
@@ -123,10 +123,11 @@ class AudiobookUpdate(BaseModel):
     url: str
 
 
-@app.get("/audiobooks", response_model=List[AudiobookReturn])
+@app.get("/audiobooks", response_model=List[str])
 def get_audiobooks(db: Session = Depends(get_db)):
     audiobooks = db.query(Audiobook).all()
-    return audiobooks
+    return_list = [x.title for x in audiobooks]
+    return return_list
 
 
 @app.get("/audiobooks/{audiobook_id}", response_model=AudiobookCreate)
