@@ -69,7 +69,7 @@ def account_activated_callback(message):
     payment = Payment(id=payment_id, user_id=user_id, amount=20.0)
     payment_dict = {
         "id": payment_id,
-        "user_id": user["id"],
+        "user_id": user_id,
         "amount": 20.0,
         "status": "pending",
     }
