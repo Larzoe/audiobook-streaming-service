@@ -53,7 +53,7 @@ paths:
       security:
         - auth0_jwk: []
   /catalog:
-    post:
+    get:
       summary: Publishers microservice for the StoryStream platform
       operationId: catalog
       x-google-backend:
