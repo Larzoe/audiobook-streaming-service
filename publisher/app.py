@@ -107,7 +107,7 @@ def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     add_book_update(new_audiobook.as_dict())
     send_notification(f"New audiobook added: {new_audiobook.title}")
 
-    return new_audiobook
+    return audiobook
 
 
 @app.put("/audiobooks/{audiobook_id}", response_model=AudiobookCreate)
