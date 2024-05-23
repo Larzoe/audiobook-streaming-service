@@ -127,10 +127,13 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_password = get_password_hash(user.password)
     new_user = User(username=user.username, hashed_password=hashed_password)
-    activate_account(new_user.as_dict())
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    db_user = get_user_by_username(db, new_user.username)
+    activate_account(db_user.as_dict())
 
     # Notification
     send_notification(f"New user registered: {new_user.username}")

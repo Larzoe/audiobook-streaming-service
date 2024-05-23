@@ -61,7 +61,12 @@ def account_activated_callback(message):
     user = json.loads(message.data.decode("utf-8"))
     print(user)
     payment_id = random.randint(1000, 9999)  # Mock payment ID
-    payment = Payment(id=payment_id, user_id=user["id"], amount=20.0)
+    if user["id"] == None:
+        user_id = random.randint(1000, 9999)
+    else:
+        user_id = user["id"]
+
+    payment = Payment(id=payment_id, user_id=user_id, amount=20.0)
     payment_dict = {
         "id": payment_id,
         "user_id": user["id"],
