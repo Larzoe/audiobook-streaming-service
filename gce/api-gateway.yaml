@@ -8,7 +8,20 @@ schemes:
 produces:
   - application/json
 paths:
-  /accounts:
+  /catalog/{proxy+}:
+    get:
+      summary: Accounts microservice for the StoryStream platform
+      operationId: catalog
+      x-google-backend:
+        address: "https://catalog.storystream.nl"
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string
+      security:
+        - auth0_jwk: []
+  /accounts/{proxy+}:
     get:
       summary: Accounts microservice for the StoryStream platform
       operationId: accounts
@@ -21,7 +34,7 @@ paths:
             type: string
       security:
         - auth0_jwk: []
-  /payments:
+  /payments/{proxy+}:
     get:
       summary: Payments microservice for the StoryStream platform
       operationId: payments
@@ -34,7 +47,7 @@ paths:
             type: string
       security:
         - auth0_jwk: []
-  /publishers:
+  /publishers/{proxy+}:
     get:
       summary: Publishers microservice for the StoryStream platform
       operationId: publishers
