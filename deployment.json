@@ -97,7 +97,8 @@
         "--filename=k8s/apps/production/accounts.yaml",
         "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/accounts/accounts:latest",
         "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "--cluster=stroystream-cluster",
+        "--output=./accounts-output"
       ]
     },
     {
@@ -107,7 +108,8 @@
         "--filename=k8s/apps/production/catalog.yaml",
         "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/catalog/catalog:latest",
         "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "--cluster=stroystream-cluster",
+        "--output=./catalog-output"
       ]
     },
     {
@@ -117,7 +119,8 @@
         "--filename=k8s/apps/production/payments.yaml",
         "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/payments/payments:latest",
         "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "--cluster=stroystream-cluster",
+        "--output=./payments-output"
       ]
     },
     {
@@ -127,7 +130,8 @@
         "--filename=k8s/apps/production/publisher.yaml",
         "--image=us-central1-docker.pkg.dev/essential-tower-422709-k9/publisher/publisher:latest",
         "--location=europe-west4",
-        "--cluster=stroystream-cluster"
+        "--cluster=stroystream-cluster",
+        "--output=./publisher-output"
       ]
     }
   ],
