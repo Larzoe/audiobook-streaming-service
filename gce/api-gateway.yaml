@@ -40,7 +40,24 @@ paths:
       summary: Publishers microservice for the StoryStream platform
       operationId: publishers
       x-google-backend:
-        address: "https://publishers.storystream.nl/audiobooks"
+        address: "https://publishers.storystream.nl/"
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string
+        '201':
+          description: A successful response
+          schema:
+            type: string
+      security:
+        - auth0_jwk: []
+  /catalog:
+    post:
+      summary: Publishers microservice for the StoryStream platform
+      operationId: catalog
+      x-google-backend:
+        address: "https://catalog.storystream.nl/audiobooks"
       responses:
         '200':
           description: A successful response
