@@ -36,6 +36,17 @@ subscription_path_account_deactivated = subscriber.subscription_path(
 )
 
 
+class Payment(Base):
+    __tablename__ = "payments"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
+    status = Column(String, default="pending")
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -44,22 +55,32 @@ def get_db():
         db.close()
 
 
-def account_activated_callback(message, db: Session = Depends(get_db)):
+def account_activated_callback(message):
     print(f"Received message on activating account: {message}")
+    db = SessionLocal()
     user = json.loads(message.data.decode("utf-8"))
-    user_id = user["id"]
+    print(user)
     payment_id = random.randint(1000, 9999)  # Mock payment ID
-    payment = Payment(id=payment_id, user_id=user_id, amount=10.0)
+    payment = Payment(id=payment_id, user_id=user["id"], amount=20.0)
+    payment_dict = {
+        "id": payment_id,
+        "user_id": user["id"],
+        "amount": 20.0,
+        "status": "pending",
+    }
     db.add(payment)
     db.commit()
-    payment_created(payment)
+    db.refresh(payment)
+
+    payment_created(payment_dict)
     message.ack()
 
 
-def account_deactivated_callback(message, db: Session = Depends(get_db)):
+def account_deactivated_callback(message):
+    db = SessionLocal()
     print(f"Received message on deactivating account: {message}")
     user = json.loads(message.data.decode("utf-8"))
-    user_id = user["id"]
+    user_id = user.id
     payment = db.query(Payment).filter(Payment.user_id == user_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
@@ -74,14 +95,6 @@ future = subscriber.subscribe(
 future1 = subscriber.subscribe(
     subscription_path_account_deactivated, callback=account_deactivated_callback
 )
-
-
-class Payment(Base):
-    __tablename__ = "payments"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)
-    amount = Column(Float, nullable=False)
-    status = Column(String, default="pending")
 
 
 Base.metadata.create_all(bind=engine)
@@ -106,7 +119,7 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     db.add(new_payment)
     db.commit()
     db.refresh(new_payment)
-    payment_created(new_payment)
+    payment_created(new_payment.as_dict())
     send_notification(f"New payment created: {new_payment.id}")
 
     return new_payment
