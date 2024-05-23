@@ -32,6 +32,14 @@ spec:
           requests:
             cpu: "200m"
             memory: "256Mi"
+        volumeMounts:
+          - mountPath: "/tmp"
+            name: serviceaccount
+            readOnly: true
+      volumes:
+        - name: serviceaccount
+          secret:
+            secretName: serviceaccount
 ---
 apiVersion: v1
 kind: Service
