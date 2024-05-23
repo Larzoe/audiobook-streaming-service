@@ -59,6 +59,6 @@ spec:
     kind: Rule
     services:
     - name: catalog-service
-      port: 5001
+      port: 5000
   tls:
     certResolver: letsencrypt
