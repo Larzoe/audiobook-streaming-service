@@ -81,6 +81,9 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -124,7 +127,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_password = get_password_hash(user.password)
     new_user = User(username=user.username, hashed_password=hashed_password)
-    activate_account(new_user)
+    activate_account(new_user.as_dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
