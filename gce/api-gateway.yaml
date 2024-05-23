@@ -9,13 +9,17 @@ produces:
   - application/json
 paths:
   /accounts:
-    get:
+    post:
       summary: Accounts microservice for the StoryStream platform
       operationId: accounts
       x-google-backend:
-        address: "https://accounts.storystream.nl./accounts"
+        address: "https://accounts.storystream.nl/register"
       responses:
         '200':
+          description: A successful response
+          schema:
+            type: string
+        '201':
           description: A successful response
           schema:
             type: string
@@ -40,7 +44,7 @@ paths:
       summary: Publishers microservice for the StoryStream platform
       operationId: publishers
       x-google-backend:
-        address: "https://publishers.storystream.nl/"
+        address: "https://publishers.storystream.nl/audiobooks"
       responses:
         '200':
           description: A successful response
