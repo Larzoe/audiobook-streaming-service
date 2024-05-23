@@ -4,4 +4,6 @@ sqlalchemy==1.4.27
 psycopg2-binary==2.9.9
 pydantic==1.9.0
 requests
+google-cloud-pubsub
+google-cloud
 
