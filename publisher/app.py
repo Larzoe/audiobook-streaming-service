@@ -16,7 +16,7 @@ DB_PASS = os.environ["DB_PASSWORD"]
 DB_URL = os.environ["DB_URL"]
 CL_RUN_URL = os.environ["CL_URL"]
 
-DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/catalog_db"  # wow this is bad practice, don't do this
+DATABASE_URL = f"postgresql://postgres:{DB_PASS}@{DB_URL}/publisher_db"  # wow this is bad practice, don't do this
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
