@@ -8,25 +8,12 @@ schemes:
 produces:
   - application/json
 paths:
-  /catalog/{proxy+}:
-    get:
-      summary: Accounts microservice for the StoryStream platform
-      operationId: catalog
-      x-google-backend:
-        address: "https://catalog.storystream.nl"
-      responses:
-        '200':
-          description: A successful response
-          schema:
-            type: string
-      security:
-        - auth0_jwk: []
-  /accounts/{proxy+}:
+  /accounts:
     get:
       summary: Accounts microservice for the StoryStream platform
       operationId: accounts
       x-google-backend:
-        address: "https://accounts.storystream.nl"
+        address: "https://accounts.storystream.nl./accounts"
       responses:
         '200':
           description: A successful response
@@ -34,12 +21,13 @@ paths:
             type: string
       security:
         - auth0_jwk: []
-  /payments/{proxy+}:
+  /payments:
     get:
       summary: Payments microservice for the StoryStream platform
       operationId: payments
       x-google-backend:
         address: "https://payments.storystream.nl"
+        path_translation: APPEND_PATH_TO_ADDRESS
       responses:
         '200':
           description: A successful response
@@ -47,14 +35,18 @@ paths:
             type: string
       security:
         - auth0_jwk: []
-  /publishers/{proxy+}:
-    get:
+  /audiobooks:
+    post:
       summary: Publishers microservice for the StoryStream platform
       operationId: publishers
       x-google-backend:
-        address: "https://publishers.storystream.nl"
+        address: "https://publishers.storystream.nl/audiobooks"
       responses:
         '200':
+          description: A successful response
+          schema:
+            type: string
+        '201':
           description: A successful response
           schema:
             type: string
@@ -67,6 +59,7 @@ paths:
       operationId: echo
       x-google-backend:
         address: "https://echo.ehv.tjeerdsma.eu/"
+        path_translation: APPEND_PATH_TO_ADDRESS
       responses:
         '200':
           description: A successful response
