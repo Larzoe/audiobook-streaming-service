@@ -57,6 +57,9 @@ class Audiobook(Base):
     genre = Column(String, nullable=False)
     price = Column(Float, nullable=False)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -101,7 +104,7 @@ def add_audiobook(audiobook: AudiobookCreate, db: Session = Depends(get_db)):
     db.add(new_audiobook)
     db.commit()
     db.refresh(new_audiobook)
-    add_book_update(new_audiobook)
+    add_book_update(new_audiobook.as_dict())
     send_notification(f"New audiobook added: {new_audiobook.title}")
 
     return new_audiobook
