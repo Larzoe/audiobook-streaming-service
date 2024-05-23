@@ -48,9 +48,6 @@ def payment_updated_callback(message):
 
 def payment_failed_callback(message):
     print(f"Received message on failing payment: {message}")
-    user = json.loads(message.data.decode("utf-8"))
-    user = User(username=user["username"], hashed_password=user["hashed_password"])
-    deactivate_account(user)
     message.ack()
 
 
