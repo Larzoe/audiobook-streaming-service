@@ -63,10 +63,6 @@ paths:
           description: A successful response
           schema:
             type: string
-        '201':
-          description: A successful response
-          schema:
-            type: string
       security:
         - auth0_jwk: []
 
