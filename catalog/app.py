@@ -42,8 +42,9 @@ def get_db():
         db.close()
 
 
-def change_book_callback(message, db: Session = Depends(get_db)):
+def change_book_callback(message):
     print(f"Received message on changing audiobook: {message}")
+    db = SessionLocal()
     audiobook = json.loads(message.data.decode("utf-8"))
     audiobook_id = audiobook["id"]
     db_audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook_id).first()
@@ -54,23 +55,27 @@ def change_book_callback(message, db: Session = Depends(get_db)):
     message.ack()
 
 
-def delete_book_callback(message, db: Session = Depends(get_db)):
+def delete_book_callback(
+    message,
+):
     print(f"Received message on deleting audiobook: {message}")
     audiobook = json.loads(message.data.decode("utf-8"))
     audiobook = db.query(Audiobook).filter(Audiobook.id == audiobook["id"]).first()
+    db = SessionLocal()
     db.delete(audiobook)
     db.commit()
     message.ack()
 
 
-def add_book_callback(message, db: Session = Depends(get_db)):
+def add_book_callback(message):
     print(f"Received message on adding audiobook: {message}")
+    db = SessionLocal()
     audiobook = json.loads(message.data.decode("utf-8"))
     audiobook = Audiobook(
-        title=audiobook.title,
-        author=audiobook.author,
-        genre=audiobook.genre,
-        url=audiobook.url,
+        title=audiobook["title"],
+        author=audiobook["author"],
+        genre=audiobook["genre"],
+        url="https://media.storystream.nl/audiobook/" + audiobook["title"],
     )
     db.add(audiobook)
     db.commit()
